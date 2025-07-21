@@ -1,0 +1,604 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BrainRot - Brain Games eLearning</title>
+    <meta name="description" content="Interactive trivia game for brain training and eLearning">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: #333;
+            padding: 20px;
+        }
+
+        .game-container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            padding: 2rem;
+            max-width: 600px;
+            width: 100%;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .game-container::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, #ff6b6b, #4ecdc4, #45b7d1, #96ceb4);
+        }
+
+        .header {
+            margin-bottom: 1.5rem;
+        }
+
+        h1 {
+            color: #2c3e50;
+            margin-bottom: 0.5rem;
+            font-size: 2.5rem;
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .subtitle {
+            color: #6c757d;
+            font-size: 1.1rem;
+            margin-bottom: 1rem;
+        }
+
+        .score-board {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 2rem;
+            padding: 1rem;
+            background: #f8f9fa;
+            border-radius: 10px;
+            border: 2px solid #e9ecef;
+        }
+
+        .score-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .score-label {
+            font-size: 0.9rem;
+            color: #6c757d;
+            margin-bottom: 0.25rem;
+        }
+
+        .score-value {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #2c3e50;
+        }
+
+        .question-container {
+            margin-bottom: 2rem;
+            min-height: 200px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .question {
+            font-size: 1.4rem;
+            margin-bottom: 1.5rem;
+            line-height: 1.6;
+            color: #2c3e50;
+            font-weight: 500;
+        }
+
+        .options {
+            display: grid;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .option {
+            background: #f8f9fa;
+            border: 2px solid #dee2e6;
+            border-radius: 10px;
+            padding: 1rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 1.1rem;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .option:hover {
+            background: #e9ecef;
+            border-color: #667eea;
+            transform: translateY(-2px);
+        }
+
+        .option.correct {
+            background: #d4edda;
+            border-color: #28a745;
+            color: #155724;
+        }
+
+        .option.incorrect {
+            background: #f8d7da;
+            border-color: #dc3545;
+            color: #721c24;
+        }
+
+        .option.disabled {
+            pointer-events: none;
+            opacity: 0.7;
+        }
+
+        .controls {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            margin-top: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            padding: 0.8rem 2rem;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn:active {
+            transform: translateY(0);
+        }
+
+        .btn.secondary {
+            background: linear-gradient(45deg, #6c757d, #495057);
+        }
+
+        .btn.secondary:hover {
+            box-shadow: 0 5px 15px rgba(108, 117, 125, 0.4);
+        }
+
+        .feedback {
+            margin-top: 1rem;
+            padding: 1rem;
+            border-radius: 10px;
+            font-weight: 500;
+            min-height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .feedback.correct {
+            background: #d4edda;
+            color: #155724;
+            border: 2px solid #c3e6cb;
+        }
+
+        .feedback.incorrect {
+            background: #f8d7da;
+            color: #721c24;
+            border: 2px solid #f5c6cb;
+        }
+
+        .game-over {
+            text-align: center;
+            padding: 2rem;
+        }
+
+        .final-score {
+            font-size: 3rem;
+            font-weight: bold;
+            color: #667eea;
+            margin-bottom: 1rem;
+        }
+
+        .performance-message {
+            font-size: 1.2rem;
+            margin-bottom: 2rem;
+            color: #2c3e50;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background: #e9ecef;
+            border-radius: 4px;
+            margin-bottom: 1rem;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #667eea, #764ba2);
+            transition: width 0.5s ease;
+            border-radius: 4px;
+        }
+
+        .welcome-screen {
+            text-align: center;
+            padding: 2rem 0;
+        }
+
+        .welcome-message {
+            font-size: 1.2rem;
+            color: #2c3e50;
+            margin-bottom: 2rem;
+            line-height: 1.6;
+        }
+
+        .start-btn {
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            padding: 1rem 3rem;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 1.2rem;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .start-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(102, 126, 234, 0.4);
+        }
+
+        @media (max-width: 480px) {
+            .game-container {
+                padding: 1rem;
+                margin: 1rem;
+            }
+
+            h1 {
+                font-size: 2rem;
+            }
+
+            .question {
+                font-size: 1.2rem;
+            }
+
+            .option {
+                padding: 0.8rem;
+                font-size: 1rem;
+            }
+
+            .controls {
+                flex-direction: column;
+            }
+
+            .score-board {
+                flex-direction: column;
+                gap: 1rem;
+            }
+
+            .score-item {
+                flex-direction: row;
+                justify-content: space-between;
+            }
+        }
+
+        .hidden {
+            display: none !important;
+        }
+    </style>
+</head>
+<body>
+    <div class="game-container">
+        <div class="header">
+            <h1>🧠 BrainRot</h1>
+            <div class="subtitle">Brain Games eLearning</div>
+        </div>
+        
+        <!-- Welcome Screen -->
+        <div class="welcome-screen" id="welcome-screen">
+            <div class="welcome-message">
+                Welcome to BrainRot! Test your knowledge with our interactive trivia game. 
+                Answer questions, build streaks, and challenge your brain!
+            </div>
+            <button class="start-btn" onclick="startGame()">🎯 Start Game</button>
+        </div>
+
+        <!-- Game Screen -->
+        <div id="game-screen" class="hidden">
+            <div class="score-board">
+                <div class="score-item">
+                    <div class="score-label">Question</div>
+                    <div class="score-value" id="current-question">1</div>
+                </div>
+                <div class="score-item">
+                    <div class="score-label">Score</div>
+                    <div class="score-value" id="score">0</div>
+                </div>
+                <div class="score-item">
+                    <div class="score-label">Streak</div>
+                    <div class="score-value" id="streak">0</div>
+                </div>
+            </div>
+
+            <div class="progress-bar">
+                <div class="progress-fill" id="progress"></div>
+            </div>
+
+            <div class="question-container">
+                <div class="question" id="question"></div>
+                <div class="options" id="options"></div>
+            </div>
+
+            <div class="feedback" id="feedback" style="display: none;"></div>
+
+            <div class="controls">
+                <button class="btn" id="next-btn" onclick="nextQuestion()" style="display: none;">Next Question</button>
+                <button class="btn secondary" onclick="restartGame()">Restart Game</button>
+            </div>
+        </div>
+
+        <!-- Game Over Screen -->
+        <div class="game-over hidden" id="game-over">
+            <div class="final-score" id="final-score"></div>
+            <div class="performance-message" id="performance-message"></div>
+            <div class="controls">
+                <button class="btn" onclick="restartGame()">🎯 Play Again</button>
+                <button class="btn secondary" onclick="showWelcome()">🏠 Main Menu</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 🎯 CUSTOMIZE YOUR QUESTIONS HERE!
+        const questions = [
+            {
+                question: "What is the capital of France?",
+                options: ["London", "Berlin", "Paris", "Madrid"],
+                correct: 2,
+                explanation: "Paris has been the capital of France since 987 AD!"
+            },
+            {
+                question: "Which planet is known as the 'Red Planet'?",
+                options: ["Venus", "Mars", "Jupiter", "Saturn"],
+                correct: 1,
+                explanation: "Mars appears red due to iron oxide (rust) on its surface."
+            },
+            {
+                question: "Who painted the Mona Lisa?",
+                options: ["Vincent van Gogh", "Pablo Picasso", "Leonardo da Vinci", "Michelangelo"],
+                correct: 2,
+                explanation: "Leonardo da Vinci painted the Mona Lisa between 1503-1519."
+            },
+            {
+                question: "What is the largest mammal in the world?",
+                options: ["African Elephant", "Blue Whale", "Giraffe", "Polar Bear"],
+                correct: 1,
+                explanation: "Blue whales can grow up to 100 feet long and weigh up to 200 tons!"
+            },
+            {
+                question: "In which year did the Titanic sink?",
+                options: ["1910", "1912", "1914", "1916"],
+                correct: 1,
+                explanation: "The Titanic sank on April 15, 1912, during its maiden voyage."
+            },
+            {
+                question: "What is the chemical symbol for gold?",
+                options: ["Go", "Gd", "Au", "Ag"],
+                correct: 2,
+                explanation: "Au comes from the Latin word 'aurum', meaning gold."
+            },
+            {
+                question: "Which is the longest river in the world?",
+                options: ["Amazon River", "Nile River", "Mississippi River", "Yangtze River"],
+                correct: 1,
+                explanation: "The Nile River stretches approximately 4,135 miles through Africa."
+            },
+            {
+                question: "Who wrote 'Romeo and Juliet'?",
+                options: ["Charles Dickens", "William Shakespeare", "Jane Austen", "Mark Twain"],
+                correct: 1,
+                explanation: "Shakespeare wrote this tragic play in the early part of his career."
+            },
+            {
+                question: "What is the hardest natural substance on Earth?",
+                options: ["Gold", "Iron", "Diamond", "Quartz"],
+                correct: 2,
+                explanation: "Diamond rates 10 on the Mohs hardness scale, the highest rating."
+            },
+            {
+                question: "Which country is home to Machu Picchu?",
+                options: ["Chile", "Peru", "Bolivia", "Ecuador"],
+                correct: 1,
+                explanation: "Machu Picchu is an ancient Incan city located in Peru's Andes Mountains."
+            }
+        ];
+
+        // Game state
+        let currentQuestionIndex = 0;
+        let score = 0;
+        let streak = 0;
+        let maxStreak = 0;
+        let gameStarted = false;
+        let answered = false;
+
+        // DOM elements
+        const welcomeScreen = document.getElementById('welcome-screen');
+        const gameScreen = document.getElementById('game-screen');
+        const gameOverScreen = document.getElementById('game-over');
+        const questionEl = document.getElementById('question');
+        const optionsEl = document.getElementById('options');
+        const scoreEl = document.getElementById('score');
+        const streakEl = document.getElementById('streak');
+        const currentQuestionEl = document.getElementById('current-question');
+        const feedbackEl = document.getElementById('feedback');
+        const nextBtn = document.getElementById('next-btn');
+        const finalScoreEl = document.getElementById('final-score');
+        const performanceMessageEl = document.getElementById('performance-message');
+        const progressEl = document.getElementById('progress');
+
+        function showWelcome() {
+            welcomeScreen.classList.remove('hidden');
+            gameScreen.classList.add('hidden');
+            gameOverScreen.classList.add('hidden');
+            gameStarted = false;
+        }
+
+        function startGame() {
+            welcomeScreen.classList.add('hidden');
+            gameScreen.classList.remove('hidden');
+            gameOverScreen.classList.add('hidden');
+            
+            // Reset game state
+            currentQuestionIndex = 0;
+            score = 0;
+            streak = 0;
+            maxStreak = 0;
+            gameStarted = true;
+            answered = false;
+            
+            updateDisplay();
+            loadQuestion();
+        }
+
+        function loadQuestion() {
+            if (currentQuestionIndex >= questions.length) {
+                endGame();
+                return;
+            }
+
+            const question = questions[currentQuestionIndex];
+            questionEl.textContent = question.question;
+            
+            optionsEl.innerHTML = '';
+            
+            question.options.forEach((option, index) => {
+                const optionEl = document.createElement('div');
+                optionEl.className = 'option';
+                optionEl.textContent = option;
+                optionEl.onclick = () => selectAnswer(index);
+                optionsEl.appendChild(optionEl);
+            });
+
+            feedbackEl.style.display = 'none';
+            nextBtn.style.display = 'none';
+            answered = false;
+
+            updateDisplay();
+        }
+
+        function selectAnswer(selectedIndex) {
+            if (answered) return;
+            
+            answered = true;
+            const question = questions[currentQuestionIndex];
+            const isCorrect = selectedIndex === question.correct;
+            
+            if (isCorrect) {
+                score += 10;
+                streak++;
+                maxStreak = Math.max(maxStreak, streak);
+            } else {
+                streak = 0;
+            }
+
+            const optionElements = optionsEl.children;
+            for (let i = 0; i < optionElements.length; i++) {
+                optionElements[i].classList.add('disabled');
+                if (i === question.correct) {
+                    optionElements[i].classList.add('correct');
+                } else if (i === selectedIndex && !isCorrect) {
+                    optionElements[i].classList.add('incorrect');
+                }
+            }
+
+            showFeedback(isCorrect, question.explanation);
+            nextBtn.style.display = 'inline-block';
+            updateDisplay();
+        }
+
+        function showFeedback(isCorrect, explanation) {
+            feedbackEl.style.display = 'flex';
+            feedbackEl.className = 'feedback ' + (isCorrect ? 'correct' : 'incorrect');
+            
+            const message = isCorrect ? 
+                `🎉 Correct! ${explanation}` : 
+                `❌ Incorrect. ${explanation}`;
+            
+            feedbackEl.textContent = message;
+        }
+
+        function nextQuestion() {
+            currentQuestionIndex++;
+            loadQuestion();
+        }
+
+        function updateDisplay() {
+            scoreEl.textContent = score;
+            streakEl.textContent = streak;
+            currentQuestionEl.textContent = `${currentQuestionIndex + 1}/${questions.length}`;
+            
+            const progress = ((currentQuestionIndex) / questions.length) * 100;
+            progressEl.style.width = progress + '%';
+        }
+
+        function endGame() {
+            gameScreen.classList.add('hidden');
+            gameOverScreen.classList.remove('hidden');
+            
+            const percentage = Math.round((score / (questions.length * 10)) * 100);
+            finalScoreEl.textContent = `${score}/${questions.length * 10} (${percentage}%)`;
+            
+            let message = '';
+            if (percentage >= 90) {
+                message = `🏆 Outstanding! You got ${percentage}% correct with a max streak of ${maxStreak}!`;
+            } else if (percentage >= 70) {
+                message = `🎯 Great job! You scored ${percentage}% with a max streak of ${maxStreak}!`;
+            } else if (percentage >= 50) {
+                message = `👍 Good effort! You got ${percentage}% correct. Keep practicing!`;
+            } else {
+                message = `📚 Keep studying! You scored ${percentage}%. Try again to improve!`;
+            }
+            
+            performanceMessageEl.textContent = message;
+        }
+
+        function restartGame() {
+            startGame();
+        }
+
+        // Initialize on page load
+        window.onload = function() {
+            showWelcome();
+        };
+    </script>
+</body>
+</html>
